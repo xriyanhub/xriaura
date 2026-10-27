@@ -1,1 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XriAura Mini App</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head>
+<body>
+    <div id="app">
+        <!-- Dynamic module content will load here -->
+        <div id="module-container">
+            <div class="loading-spinner">Loading XriAura...</div>
+        </div>
+    </div>
 
+    <!-- Navigation Bar -->
+    <nav class="bottom-nav">
+        <button onclick="loadModule('home')">🏠 Home</button>
+        <button onclick="loadModule('task')">📋 Task</button>
+        <button onclick="loadModule('earn')">💰 Earn</button>
+        <button onclick="loadModule('refer')">👥 Refer</button>
+        <button onclick="loadModule('profile')">👤 Profile</button>
+    </nav>
+
+    <script src="theme.js"></script>
+    <script>
+        async function loadModule(moduleName) {
+            const container = document.getElementById('module-container');
+            container.innerHTML = '<div class="loading-spinner">Loading...</div>';
+
+            try {
+                const response = await fetch(`modules/${moduleName}/${moduleName}.html`);
+                if (!response.ok) throw new Error('Module file not found');
+                const html = await response.text();
+                container.innerHTML = html;
+
+                try {
+                    const moduleScript = await import(`./modules/${moduleName}/${moduleName}.js`);
+                    if (moduleScript.init) {
+                        moduleScript.init();
+                    }
+                } catch (jsErr) {
+                    // Module without JS or loading fallback
+                }
+            } catch (error) {
+                container.innerHTML = `<div class="glass-card"><h2>Error</h2><p>Unable to load ${moduleName} module.</p></div>`;
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            loadModule('home');
+        });
+    </script>
+</body>
+</html>
